@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  profile        Profile?
+  workoutHistory WorkoutHistory[]
+  streak         Streak?
+  achievements   Achievement[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id")
+  name        String
+  weightKg    Decimal?  @map("weight_kg") @db.Decimal(5, 2)
+  heightCm    Int?      @map("height_cm")
+  dateOfBirth DateTime? @map("date_of_birth")
+  sex         String?
+  level       String    @default("Beginner")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model WorkoutHistory {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  workoutKey      String   @map("workout_key")
+  workoutLabel    String   @map("workout_label")
+  completedAt     DateTime @map("completed_at")
+  durationSeconds Int      @map("duration_seconds")
+  exercisesTotal  Int      @map("exercises_total")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("workout_history")
+}
+
+model Streak {
+  userId          String    @id @map("user_id")
+  current         Int       @default(0)
+  best            Int       @default(0)
+  lastWorkoutDate DateTime? @map("last_workout_date")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("streaks")
+}
+
+model Achievement {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  achievementId String   @map("achievement_id")
+  unlockedAt    DateTime @default(now()) @map("unlocked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("achievements")
+}
