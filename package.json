@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=test tsx watch src/index.ts",
     "build": "prisma generate && tsc",
+    "postbuild": "prisma db execute --file prisma/migrations/0001_init.sql --schema prisma/schema.prisma",
     "start": "node dist/index.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
